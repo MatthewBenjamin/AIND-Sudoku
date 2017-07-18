@@ -29,7 +29,22 @@ def naked_twins(values):
 
 def cross(A, B):
     "Cross product of elements in A and elements in B."
-    pass
+    return [s + t for s in A for t in B]
+
+rows = 'ABCDEFGHI'
+cols = '123456789'
+
+boxes = cross(rows, cols)
+row_units = [cross(r, cols) for r in rows]
+col_units = [cross(rows, c) for c in cols]
+square_rows = [('ABC'), ('DEF'), ('GHI')]
+square_cols = [('123'), ('456'), ('789')]
+square_units = [cross(r, c) for r in square_rows for c in square_cols]
+colsreverse = cols[::-1]
+diag_units1 = [rows[i] + cols[i] for i in range(len(rows))]
+diag_units2 = [rows[i] + colsreverse[i] for i in range(len(rows))]
+
+unitlist = row_units + col_units + square_units + [diag_units1, diag_units2]
 
 def grid_values(grid):
     """
