@@ -45,6 +45,8 @@ diag_units1 = [rows[i] + cols[i] for i in range(len(rows))]
 diag_units2 = [rows[i] + colsreverse[i] for i in range(len(rows))]
 
 unitlist = row_units + col_units + square_units + [diag_units1, diag_units2]
+units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
+peers = dict((s, set(sum(units[s],[]))-set([s]) for s in boxes))
 
 def grid_values(grid):
     """
@@ -68,10 +70,21 @@ def display(values):
     pass
 
 def eliminate(values):
-    pass
+    solved_units = [unit for unit in values if len(values[unit]) == 1]
+    for unit in solved_units:
+        unit_value = values[unit]
+        for peer in peers[unit]:
+            if unit_value in values[peer]
+                new_value = values[unit].replace(unit_value, '')
+                values = assign_value(values, peer, new_value)
+    return values
 
 def only_choice(values):
-    pass
+    for unit in unitlist:
+        for digit in '123456789':
+            dplaces = [box for box in unit if digit in values[box]]
+            if len(dplaces) == 1:
+                values = assign_value(values, dplaces[0], digit)
 
 def reduce_puzzle(values):
     pass
