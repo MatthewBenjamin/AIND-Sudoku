@@ -15,6 +15,60 @@ def assign_value(values, box, value):
         assignments.append(values.copy())
     return values
 
+def get_naked_twins(values, twins):
+    """Find all naked twins pairs.
+    Args:
+        values(dict): a dictionary of the form {'box_name': '123456789', ...}
+        twins(list): a list with all units from values with a length of 2
+    Returns:
+        list of objects containing peers of both twins and values to remove
+    """
+    all_naked_twins = []
+    twin_copy = twins.copy()
+    for box in twins:
+        # avoid duplicates
+        if box in twin_copy:
+            box_peers = set(peers[box])
+            box_twins = [twin for twin in twin_copy
+                         if values[twin] == values[box] and twin in box_peers]
+            for box_twin in box_twins:
+                twin_peers = set(peers[box_twin])
+                # only add peers of both naked_twins to targets
+                target_peers = box_peers & twin_peers
+                naked_twin = {
+                    'value': values[box],
+                    'target_peers': target_peers
+                }
+                all_naked_twins.append(naked_twin)
+            # remove to avoid duplicates
+            twin_copy.remove(box)
+    return all_naked_twins
+
+def eliminate_naked_twin_values(values, all_naked_twins):
+    """Eliminate values from peers of naked twins.
+    Args:
+        values(dict): a dictionary of the form {'box_name': '123456789', ...}
+        all_naked_twins(list): list of objects containing peers of both twins and values to remove
+    Returns:
+        the values dictionary with the naked twins eliminated from peers.
+    """
+    for target_dict in all_naked_twins:
+        first_value = target_dict['value'][0]
+        second_value = target_dict['value'][1]
+        for target in target_dict['target_peers']:
+            target_peer_value = values[target]
+            # only get targets with values
+            if first_value in target_peer_value or \
+                second_value in target_peer_value:
+                new_value = target_peer_value.replace(first_value, '').replace(second_value, '')
+                if new_value == '':
+                    # Error, new value is empty
+                    print("ERROR EMPTY VALUE")
+                else:
+                    values = assign_value(values, target, new_value)
+
+    return values
+
 def naked_twins(values):
     """Eliminate values using the naked twins strategy.
     Args:
@@ -25,7 +79,11 @@ def naked_twins(values):
     """
 
     # Find all instances of naked twins
+    poss_twins = [box for box in values if len(values[box]) == 2]
+    all_naked_twins = get_naked_twins(values, poss_twins)
     # Eliminate the naked twins as possibilities for their peers
+    values = eliminate_naked_twin_values(values, all_naked_twins)
+    return values
 
 def cross(A, B):
     "Cross product of elements in A and elements in B."
@@ -107,6 +165,7 @@ def reduce_puzzle(values):
     while not stalled:
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
 
+        values = naked_twins(values)
         values = eliminate(values)
         values = only_choice(values)
 
